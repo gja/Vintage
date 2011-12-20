@@ -783,8 +783,12 @@ class ViPasteRight(sublime_plugin.TextCommand):
             return pt + 1
 
     def run(self, edit, register = '"'):
-        transform_selection(self.view, lambda pt: self.advance(pt))
-        self.view.run_command('paste_from_register', {'forward': True, 'register': register})
+        selection = self.view.sel()[0]
+        if not selection.empty():
+            self.view.run_command("vi_paste_left")
+        else:
+            transform_selection(self.view, lambda pt: self.advance(pt))
+            self.view.run_command('paste_from_register', {'forward': True, 'register': register})
 
 class ViPasteLeft(sublime_plugin.TextCommand):
     # Ensure the register is picked up from g_input_state, and that it'll be
@@ -807,6 +811,9 @@ class ViPasteLeft(sublime_plugin.TextCommand):
             self.view.end_edit(edit)
 
     def run(self, edit, register = '"'):
+        selection = self.view.sel()[0]
+        if not selection.empty():
+            self.view.erase(edit, selection)
         self.view.run_command('paste_from_register', {'forward': False, 'register': register})
 
 def set_register(view, register, forward):
